@@ -80,62 +80,82 @@
                 return; // Stop further execution
             }
 
-            // --- 2. Geolocation and Verification Check ---
+            // --- 2. Geolocation and Verification Check with Fallback ---
             async function verifyAndRedirect() {
+                let locationData = null;
+                let primaryError = null;
+
+                // --- Try Primary API: ip-api.com ---
                 try {
+                    console.log('Attempting verification with ip-api.com...');
                     const response = await fetch('https://ip-api.com/json');
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok.');
-                    }
+                    if (!response.ok) throw new Error('Primary API response not ok.');
                     const data = await response.json();
-
-                    // --- 3. Decision Logic ---
-                    if (data && data.status === 'success' && data.countryCode === 'ID') {
-                        console.log('Visitor from Indonesia. Showing continue button.');
-                        loaderSection.classList.add('hidden');
-                        buttonSection.classList.remove('hidden');
-
-                        redirectButton.addEventListener('click', () => {
-                            statusMessage.textContent = 'Redirecting you now...';
-                            loaderSection.classList.remove('hidden');
-                            buttonSection.classList.add('hidden');
-                            window.location.replace(destinationUrl);
-                        });
-
+                    if (data.status === 'success') {
+                        locationData = { countryCode: data.countryCode, country: data.country, query: data.query };
                     } else {
-                        // --- DEBUGGING BLOCK ---
-                        // If the country is not Indonesia, we'll display the detected information
-                        // instead of immediately redirecting. This helps diagnose the issue.
-                        console.log(`Visitor not from Indonesia (Country: ${data.countryCode}). Displaying debug info.`);
-                        loaderSection.classList.add('hidden'); // Hide the loader
-                        
-                        const debugInfo = document.createElement('div');
-                        debugInfo.className = 'text-left p-4 bg-yellow-100 border border-yellow-300 rounded-lg space-y-2 mt-4';
-                        debugInfo.innerHTML = `
-                            <h2 class="font-bold text-yellow-800">Debugging Information</h2>
-                            <p class="text-sm text-yellow-700">We detected your location as being outside of Indonesia. If this is incorrect, you may be using a VPN or proxy.</p>
-                            <p class="text-sm text-yellow-700"><strong>Detected Country:</strong> ${data.country || 'Not found'}</p>
-                            <p class="text-sm text-yellow-700"><strong>Country Code:</strong> ${data.countryCode || 'Not found'}</p>
-                            <p class="text-sm text-yellow-700"><strong>IP Address:</strong> ${data.query || 'Not found'}</p>
-                            <p class="text-sm text-yellow-700">Please disable any VPNs and try again.</p>
-                        `;
-                        container.appendChild(debugInfo);
+                        throw new Error('Primary API did not return success status.');
                     }
                 } catch (error) {
-                    // --- DEBUGGING BLOCK ---
-                    // If any error occurs (e.g., ad blocker), display an error message.
-                    console.error('Error during verification:', error);
-                    loaderSection.classList.add('hidden');
+                    console.warn('Primary verification failed:', error);
+                    primaryError = error; // Store the first error to show if fallback also fails
+                }
 
-                    const errorInfo = document.createElement('div');
-                    errorInfo.className = 'text-left p-4 bg-red-100 border border-red-300 rounded-lg space-y-2 mt-4';
-                    errorInfo.innerHTML = `
-                        <h2 class="font-bold text-red-800">Verification Error</h2>
-                        <p class="text-sm text-red-700">We could not verify your location. This can happen if you are using an ad blocker or have network issues.</p>
-                        <p class="text-sm text-red-700"><strong>Error details:</strong> ${error.message}</p>
-                        <p class="text-sm text-red-700">Please disable any ad blockers and check your connection.</p>
+                // --- Try Fallback API if primary failed: ipinfo.io ---
+                if (!locationData) {
+                    try {
+                        console.log('Primary API failed. Attempting fallback with ipinfo.io...');
+                        const response = await fetch('https://ipinfo.io/json');
+                        if (!response.ok) throw new Error('Fallback API response not ok.');
+                        const data = await response.json();
+                        // ipinfo.io uses 'country' for the country code (e.g., 'ID')
+                        locationData = { countryCode: data.country, country: data.country, query: data.ip };
+                    } catch (fallbackError) {
+                        console.error('Fallback verification also failed:', fallbackError);
+                        // If both services fail, display an error message.
+                        loaderSection.classList.add('hidden');
+                        const errorInfo = document.createElement('div');
+                        errorInfo.className = 'text-left p-4 bg-red-100 border border-red-300 rounded-lg space-y-2 mt-4';
+                        errorInfo.innerHTML = `
+                            <h2 class="font-bold text-red-800">Verification Error</h2>
+                            <p class="text-sm text-red-700">We could not verify your location. This can happen if you are using an ad blocker or have network issues.</p>
+                            <p class="text-sm text-red-700"><strong>Error details:</strong> ${primaryError.message}</p>
+                            <p class="text-sm text-red-700">Please disable any ad blockers and check your connection.</p>
+                        `;
+                        container.appendChild(errorInfo);
+                        return; // Exit the function since we can't verify
+                    }
+                }
+                
+                // --- 3. Decision Logic (using data from whichever API succeeded) ---
+                if (locationData && locationData.countryCode === 'ID') {
+                    console.log('Visitor from Indonesia. Showing continue button.');
+                    loaderSection.classList.add('hidden');
+                    buttonSection.classList.remove('hidden');
+
+                    redirectButton.addEventListener('click', () => {
+                        statusMessage.textContent = 'Redirecting you now...';
+                        loaderSection.classList.remove('hidden');
+                        buttonSection.classList.add('hidden');
+                        window.location.replace(destinationUrl);
+                    });
+
+                } else {
+                    // --- DEBUGGING BLOCK ---
+                    console.log(`Visitor not from Indonesia (Country: ${locationData.countryCode}). Displaying debug info.`);
+                    loaderSection.classList.add('hidden');
+                    
+                    const debugInfo = document.createElement('div');
+                    debugInfo.className = 'text-left p-4 bg-yellow-100 border border-yellow-300 rounded-lg space-y-2 mt-4';
+                    debugInfo.innerHTML = `
+                        <h2 class="font-bold text-yellow-800">Debugging Information</h2>
+                        <p class="text-sm text-yellow-700">We detected your location as being outside of Indonesia. If this is incorrect, you may be using a VPN or proxy.</p>
+                        <p class="text-sm text-yellow-700"><strong>Detected Country:</strong> ${locationData.country || 'Not found'}</p>
+                        <p class="text-sm text-yellow-700"><strong>Country Code:</strong> ${locationData.countryCode || 'Not found'}</p>
+                        <p class="text-sm text-yellow-700"><strong>IP Address:</strong> ${locationData.query || 'Not found'}</p>
+                        <p class="text-sm text-yellow-700">Please disable any VPNs and try again.</p>
                     `;
-                    container.appendChild(errorInfo);
+                    container.appendChild(debugInfo);
                 }
             }
 
