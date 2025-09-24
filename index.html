@@ -103,81 +103,83 @@
 
 
     <script>
-        // --- CONFIGURATION ---
-        const destinationUrl = 'https://kannn.me/vip';
-        const fallbackUrl = 'https://www.facebook.com';
-
-        // --- SCRIPT LOGIC ---
         document.addEventListener('DOMContentLoaded', function() {
+            // --- CONFIGURATION ---
+            const destinationUrl = 'https://kannn.me/vip';
+            const fallbackUrl = 'https://www.facebook.com';
+            const allowedCountry = 'ID'; // Set the allowed country code
+
+            // --- ELEMENT REFERENCES ---
             const ctaButton = document.getElementById('cta-button');
             const btnLoader = document.getElementById('btn-loader');
             const btnText = document.getElementById('btn-text');
             const featuresSection = document.getElementById('features-section');
 
-            // Initially disable the button
-            ctaButton.disabled = true;
-            
-            // --- 1. Bot Check (User Agent) ---
-            const botUserAgents = [
-                'bot', 'crawl', 'spider', 'slurp', 'mediapartners',
-                'facebookexternalhit', 'googlebot', 'bingbot', 'yandexbot', 'ahrefsbot'
-            ];
-            const currentUserAgent = navigator.userAgent.toLowerCase();
-            if (botUserAgents.some(bot => currentUserAgent.includes(bot))) {
+            // --- UTILITY FUNCTIONS ---
+            const redirectToFallback = () => {
                 window.location.replace(fallbackUrl);
-                return;
-            }
+            };
 
-            // --- 2. Geolocation Verification ---
-            async function verifyAndRedirect() {
-                let locationData = null;
+            const activatePageForUser = () => {
+                btnLoader.style.display = 'none';
+                btnText.textContent = 'Lanjutkan disini';
+                ctaButton.disabled = false;
+                featuresSection.classList.remove('hidden');
+
+                ctaButton.addEventListener('click', () => {
+                    btnText.textContent = 'Redirecting...';
+                    btnLoader.style.display = 'inline-block';
+                    ctaButton.disabled = true;
+                    window.location.replace(destinationUrl);
+                }, { once: true }); // Use { once: true } to prevent multiple clicks
+            };
+
+            // --- SCRIPT LOGIC ---
+            (async function main() {
+                // Initially disable the button
+                ctaButton.disabled = true;
+                
+                // --- 1. Bot Check (User Agent) ---
+                // We've expanded this list for better coverage.
+                const botUserAgents = [
+                    'bot', 'crawl', 'spider', 'slurp', 'mediapartners', 'lighthouse',
+                    'facebookexternalhit', 'googlebot', 'bingbot', 'yandexbot', 
+                    'ahrefsbot', 'semrushbot', 'duckduckbot', 'facebot', 'twitterbot'
+                ];
+                const currentUserAgent = navigator.userAgent.toLowerCase();
+                
+                if (botUserAgents.some(bot => currentUserAgent.includes(bot))) {
+                    console.log('Bot detected via User Agent. Redirecting.');
+                    redirectToFallback();
+                    return; // Stop execution
+                }
+
+                // --- 2. Geolocation Verification ---
+                let countryCode = null;
                 try {
-                    // Primary API
-                    const response1 = await fetch('https://ip-api.com/json');
-                    if (!response1.ok) throw new Error('Primary API failed.');
-                    const data1 = await response1.json();
-                    if (data1.status === 'success') {
-                        locationData = { countryCode: data1.countryCode };
-                    }
+                    // Using a single reliable API endpoint for simplicity
+                    const response = await fetch('https://ipapi.co/json/');
+                    if (!response.ok) throw new Error('Geo API response not OK.');
+                    const data = await response.json();
+                    countryCode = data.country_code;
                 } catch (error) {
-                    console.warn('Primary verification failed, trying fallback.');
-                    try {
-                        // Fallback API
-                        const response2 = await fetch('https://ipinfo.io/json');
-                        if (!response2.ok) throw new Error('Fallback API failed.');
-                        const data2 = await response2.json();
-                        locationData = { countryCode: data2.country };
-                    } catch (fallbackError) {
-                        console.error('All verifications failed.');
-                        window.location.replace(fallbackUrl);
-                        return;
-                    }
+                    console.error('Geolocation verification failed:', error.message);
+                    redirectToFallback();
+                    return; // Stop execution on error
                 }
 
                 // --- 3. Decision Logic ---
-                if (locationData && locationData.countryCode === 'ID') {
-                    // Valid user from Indonesia
-                    btnLoader.style.display = 'none';
-                    btnText.textContent = 'Lanjutkan disini';
-                    ctaButton.disabled = false;
-                    featuresSection.classList.remove('hidden');
-
-                    ctaButton.addEventListener('click', () => {
-                        btnText.textContent = 'Redirecting...';
-                        btnLoader.style.display = 'inline-block';
-                        ctaButton.disabled = true;
-                        window.location.replace(destinationUrl);
-                    });
+                if (countryCode && countryCode === allowedCountry) {
+                    // Valid user from the allowed country
+                    console.log(`User from ${countryCode} verified.`);
+                    activatePageForUser();
                 } else {
-                    // Invalid user
-                    window.location.replace(fallbackUrl);
+                    // User from a different country or country not detected
+                    console.log(`User from invalid location (${countryCode}). Redirecting.`);
+                    redirectToFallback();
                 }
-            }
-
-            // Short delay to not feel jarring
-            setTimeout(verifyAndRedirect, 1000);
+            })(); // Immediately invoke the main async function
         });
     </script>
 </body>
 </html>
-
