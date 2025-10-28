@@ -1843,27 +1843,32 @@ EmbeddedModules["farm/fishing.lua"] = function()
                 CancelFishingInputsRemote:InvokeServer()
 
                 while Window:GetConfigValue("AutoInstantCatch") and Core.IsWindowOpen do
-                    local chargeTime = workspace:GetServerTimeNow()
-                    local castPower = self:CalculateCastPower()
-                    -- local castPower = Constants:GetPower(startTime)
-                    local delayCast = self:GetElapsedFromPower(chargeTime, castPower)
-                    ChargeFishingRodRemote:InvokeServer(chargeTime)
+local chargeTime = workspace:GetServerTimeNow()
+                local castPower = self:CalculateCastPower()
+                -- local castPower = Constants:GetPower(startTime)
+                local delayCast = self:GetElapsedFromPower(chargeTime, castPower)
+                ChargeFishingRodRemote:InvokeServer(chargeTime)
 
-                    if Window:GetConfigValue("AutoPerfectCast") then
-                        task.wait(0.1)
-                        -- print("Waiting for perfect cast timing:", delayCast)
-                        -- task.wait(delayCast)
-                    end
+                -- [[ START: FIX ]] --
+                
+                -- REMOVED: The incorrect 'if Window:GetConfigValue("AutoPerfectCast")' block
+                
+                -- ADDED: The correct wait. This tells the script to wait for the
+                -- calculated duration ('delayCast') before trying to start the minigame.
+                -- This simulates a real player holding down the button.
+                task.wait(delayCast) 
 
-                    local startTime = workspace:GetServerTimeNow()
-                    local success, minigameData = RequestFishingMinigameStartedRemote:InvokeServer(raycastResult.Position.Y, castPower, startTime)
-                    if success then
-                        CurrentMinigameData = minigameData
-                        break
-                    else
-                        CancelFishingInputsRemote:InvokeServer()
-                    end
+                -- [[ END: FIX ]] --
+
+                local startTime = workspace:GetServerTimeNow()
+                local success, minigameData = RequestFishingMinigameStartedRemote:InvokeServer(raycastResult.Position.Y, castPower, startTime)
+                if success then
+                    CurrentMinigameData = minigameData
+                    break
+                else
+                    CancelFishingInputsRemote:InvokeServer()
                 end
+            end
             end)()
 
             local delayRetry = math.max(Window:GetConfigValue("AutoInstantCatchDelay") or 1.30, 0.1)
