@@ -3,6 +3,8 @@
 -- https://github.com/alfin-efendy/lua-bundler
 
 local EmbeddedModules = {}
+local RunService = game:GetService("RunService")
+local Stats = game:GetService("Stats")
 
 -- Module: auto/events.lua
 EmbeddedModules["auto/events.lua"] = function()
@@ -1842,34 +1844,47 @@ EmbeddedModules["farm/fishing.lua"] = function()
             coroutine.wrap(function()
                 CancelFishingInputsRemote:InvokeServer()
 
-                while Window:GetConfigValue("AutoInstantCatch") and Core.IsWindowOpen do
-                local castBuffer = math.max(Window:GetConfigValue("CastDelayBuffer") or 0.2, 0.05)
-                local chargeTime = workspace:GetServerTimeNow()
-                local castPower = self:CalculateCastPower()
-                -- local castPower = Constants:GetPower(startTime)
-                local delayCast = self:GetElapsedFromPower(chargeTime, castPower)
-                ChargeFishingRodRemote:InvokeServer(chargeTime)
+               while Window:GetConfigValue("AutoInstantCatch") and Core.IsWindowOpen do
+            local castBuffer = math.max(Window:GetConfigValue("CastDelayBuffer") or 0.2, 0.05)
+            local chargeTime = workspace:GetServerTimeNow()
+            local castPower = self:CalculateCastPower()
+            -- local castPower = Constants:GetPower(startTime)
+            
+            -- Assuming 'delayCast' is the *duration* you need to wait
+            local delayCast = self:GetElapsedFromPower(chargeTime, castPower)
+            
+            ChargeFishingRodRemote:InvokeServer(chargeTime)
 
-                -- [[ START: FIX ]] --
-                
-                -- REMOVED: The incorrect 'if Window:GetConfigValue("AutoPerfectCast")' block
-                
-                -- ADDED: The correct wait. This tells the script to wait for the
-                -- calculated duration ('delayCast') before trying to start the minigame.
-                -- This simulates a real player holding down the button.
-                task.wait(delayCast + castBuffer)
+            -- [[ START: PING-ADJUSTED FIX ]] --
+            
+            -- 1. Automatically detect your ping (in seconds)
+            local ping = Stats.Network.ServerStatsItem["Data Ping"]:GetValue() / 1000
 
-                -- [[ END: FIX ]] --
+            -- 2. Calculate the *exact* server time we need to release
+            -- We subtract half the ping to account for the travel time
+            -- of our *next* remote call. This "aims" our request
+            -- so it arrives at the server at the perfect time.
+            local targetReleaseTime = chargeTime + delayCast + castBuffer - (ping / 2)
 
-                local startTime = workspace:GetServerTimeNow()
-                local success, minigameData = RequestFishingMinigameStartedRemote:InvokeServer(raycastResult.Position.Y, castPower, startTime)
-                if success then
-                    CurrentMinigameData = minigameData
-                    break
-                else
-                    CancelFishingInputsRemote:InvokeServer()
-                end
+            -- 3. Use a precise loop instead of task.wait()
+            -- This loop runs every frame and checks the real server time.
+            -- It is not affected by client lag like task.wait() is.
+            while workspace:GetServerTimeNow() < targetReleaseTime do
+                RunService.Heartbeat:Wait()
             end
+
+            -- [[ END: PING-ADJUSTED FIX ]] --
+
+            local startTime = workspace:GetServerTimeNow() -- Get the actual release time
+            local success, minigameData = RequestFishingMinigameStartedRemote:InvokeServer(raycastResult.Position.Y, castPower, startTime)
+            
+            if success then
+                CurrentMinigameData = minigameData
+                break
+            else
+                CancelFishingInputsRemote:InvokeServer()
+            end
+        end
             end)()
 
             local delayRetry = math.max(Window:GetConfigValue("AutoInstantCatchDelay") or 1.30, 0.1)
