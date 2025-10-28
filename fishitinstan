@@ -1844,60 +1844,64 @@ EmbeddedModules["farm/fishing.lua"] = function()
             coroutine.wrap(function()
                 CancelFishingInputsRemote:InvokeServer()
 
-               while Window:GetConfigValue("AutoInstantCatch") and Core.IsWindowOpen do
-            local castBuffer = math.max(Window:GetConfigValue("CastDelayBuffer") or 0.2, 0.05)
-            local chargeTime = workspace:GetServerTimeNow()
-            local castPower = self:CalculateCastPower()
-            -- local castPower = Constants:GetPower(startTime)
-            
-            -- Assuming 'delayCast' is the *duration* you need to wait
-            local delayCast = self:GetElapsedFromPower(chargeTime, castPower)
-            
-            ChargeFishingRodRemote:InvokeServer(chargeTime)
+             while Window:GetConfigValue("AutoInstantCatch") and Core.IsWindowOpen do
+        -- CONFIGURATION --
+        local castBuffer = math.max(Window:GetConfigValue("CastDelayBuffer") or 0.2, 0.05)
 
-            -- [[ START: PING-ADJUSTED FIX ]] --
-            
-            -- 1. Automatically detect your ping (in seconds)
-            local ping = Stats.Network.ServerStatsItem["Data Ping"]:GetValue() / 1000
+        -- STEP 1: Charge the rod
+        local chargeTime = workspace:GetServerTimeNow()
+        local castPower = self:CalculateCastPower()
 
-            -- 2. Calculate the *exact* server time we need to release
-            -- We subtract half the ping to account for the travel time
-            -- of our *next* remote call. This "aims" our request
-            -- so it arrives at the server at the perfect time.
-            local targetReleaseTime = chargeTime + delayCast + castBuffer - (ping / 2)
+        -- STEP 2: Determine how long to hold before releasing
+        local delayCast = self:GetElapsedFromPower(chargeTime, castPower)
 
-            -- 3. Use a precise loop instead of task.wait()
-            -- This loop runs every frame and checks the real server time.
-            -- It is not affected by client lag like task.wait() is.
-            while workspace:GetServerTimeNow() < targetReleaseTime do
-                RunService.Heartbeat:Wait()
-            end
+        -- STEP 3: Start charging on the server
+        ChargeFishingRodRemote:InvokeServer(chargeTime)
 
-            -- [[ END: PING-ADJUSTED FIX ]] --
+        -- STEP 4: Adjust timing based on ping
+        local ping = (Stats.Network.ServerStatsItem["Data Ping"]:GetValue() or 0) / 1000
+        local targetReleaseTime = chargeTime + delayCast + castBuffer - (ping / 2)
 
-            local startTime = workspace:GetServerTimeNow() -- Get the actual release time
-            local success, minigameData = RequestFishingMinigameStartedRemote:InvokeServer(raycastResult.Position.Y, castPower, startTime)
-            
-            if success then
-                CurrentMinigameData = minigameData
-                break
-            else
-                CancelFishingInputsRemote:InvokeServer()
-            end
-        end
-            end)()
+        -- Debug info (optional)
+        print(string.format(
+            "Charging... | Power: %.3f | DelayCast: %.3f | Ping: %.3f | TargetRelease: %.3f",
+            castPower, delayCast, ping, targetReleaseTime
+        ))
 
-            local delayRetry = math.max(Window:GetConfigValue("AutoInstantCatchDelay") or 1.30, 0.1)
-
-            -- if Window:GetConfigValue("AutoPerfectCast") then
-            --     delayRetry = delayCast + delayRetry
-            -- end
-            print("Waiting after cast for perfect catch:", delayRetry)
-            task.wait(delayRetry)
+        -- STEP 5: Wait precisely until the correct release time
+        while workspace:GetServerTimeNow() < targetReleaseTime do
+            RunService.Heartbeat:Wait()
         end
 
-        self:StopAutoFishing()
+        -- STEP 6: Release the cast at server-synced time
+        local releaseTime = workspace:GetServerTimeNow()
+
+        -- STEP 7: Start the fishing minigame
+        local success, minigameData = RequestFishingMinigameStartedRemote:InvokeServer(
+            raycastResult and raycastResult.Position.Y or 0,
+            castPower,
+            releaseTime
+        )
+
+        -- STEP 8: Handle response
+        if success and minigameData then
+            print("[✅] Minigame started successfully!")
+            CurrentMinigameData = minigameData
+            break
+        else
+            print("[❌] Minigame failed to start. Canceling inputs and retrying...")
+            CancelFishingInputsRemote:InvokeServer()
+        end
     end
+
+    -- STEP 9: Wait before retrying
+    local delayRetry = math.max(Window:GetConfigValue("AutoInstantCatchDelay") or 1.3, 0.1)
+    print("Waiting after cast for next try:", delayRetry)
+    task.wait(delayRetry)
+
+    -- STEP 10: Stop if auto-fishing is off
+    self:StopAutoFishing()
+end)
 
     return m
 end
