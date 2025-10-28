@@ -1843,7 +1843,8 @@ EmbeddedModules["farm/fishing.lua"] = function()
                 CancelFishingInputsRemote:InvokeServer()
 
                 while Window:GetConfigValue("AutoInstantCatch") and Core.IsWindowOpen do
-local chargeTime = workspace:GetServerTimeNow()
+                local castBuffer = math.max(Window:GetConfigValue("CastDelayBuffer") or 0.2, 0.05)
+                local chargeTime = workspace:GetServerTimeNow()
                 local castPower = self:CalculateCastPower()
                 -- local castPower = Constants:GetPower(startTime)
                 local delayCast = self:GetElapsedFromPower(chargeTime, castPower)
@@ -1856,7 +1857,7 @@ local chargeTime = workspace:GetServerTimeNow()
                 -- ADDED: The correct wait. This tells the script to wait for the
                 -- calculated duration ('delayCast') before trying to start the minigame.
                 -- This simulates a real player holding down the button.
-                task.wait(delayCast + 0.2)
+                task.wait(delayCast + castBuffer)
 
                 -- [[ END: FIX ]] --
 
@@ -2197,6 +2198,17 @@ EmbeddedModules["farm/ui.lua"] = function()
                     Fishing:StopAutoFishing()
                 end
             end
+        })
+
+                accordion:AddNumberBox({
+            Name = "Delay cast ppower ⛵",
+            Placeholder = "Delay cast power...",
+            Default = 0.2,
+            Min = 0.05,
+            Max = 10,
+            Increment = 0.01,
+            Decimals = 2,
+            Flag = "CastDelayBuffer",
         })
     end
 
