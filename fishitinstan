@@ -1856,7 +1856,7 @@ local chargeTime = workspace:GetServerTimeNow()
                 -- ADDED: The correct wait. This tells the script to wait for the
                 -- calculated duration ('delayCast') before trying to start the minigame.
                 -- This simulates a real player holding down the button.
-                task.wait(delayCast + 0.1)
+                task.wait(delayCast + 0.2)
 
                 -- [[ END: FIX ]] --
 
