@@ -1866,7 +1866,7 @@ EmbeddedModules["farm/fishing.lua"] = function()
                 end
             end)()
 
-            local delayRetry = math.max(Window:GetConfigValue("AutoInstantCatchDelay") or 1.30, 0.1)
+            local delayRetry = math.max(Window:GetConfigValue("AutoInstantCatchDelay") or 1.80, 0.1)
 
             -- if Window:GetConfigValue("AutoPerfectCast") then
             --     delayRetry = delayCast + delayRetry
@@ -2173,7 +2173,7 @@ EmbeddedModules["farm/ui.lua"] = function()
         accordion:AddNumberBox({
             Name = "Delay between casts ⛵",
             Placeholder = "Delay between casts...",
-            Default = 1.30,
+            Default = 1.8,
             Min = 0.1,
             Max = 20.0,
             Increment = 0.01,
