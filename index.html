@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale-1.0">
     <title>Exclusive Offer</title>
     <!-- Tailwind CSS for styling -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -20,7 +20,6 @@
             height: 1.25rem; /* 20px */
             animation: spin 1s linear infinite;
         }
-
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
@@ -31,47 +30,45 @@
             animation: fadeIn 1s ease-in-out forwards;
             opacity: 0;
         }
-
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+            from { opacity: 0; transform: translateY(10px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        /* Engaging pulse animation for the CTA button */
+        .cta-pulse {
+            animation: pulse-light 2s infinite;
+        }
+        @keyframes pulse-light {
+            0%, 100% {
+                box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.7); /* cyan-400 */
+            }
+            50% {
+                box-shadow: 0 0 0 14px rgba(56, 189, 248, 0);
+            }
         }
     </style>
-    <script>
-!function(f,b,e,v,n,t,s)
-{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-n.queue=[];t=b.createElement(e);t.async=!0;
-t.src=v;s=b.getElementsByTagName(e)[0];
-s.parentNode.insertBefore(t,s)}(window, document,'script',
-'https://connect.facebook.net/en_US/fbevents.js');
-fbq('init', '1495404641899316');
-fbq('track', 'PageView');
-</script>
-<noscript><img height="1" width="1" style="display:none"
-src="https://www.facebook.com/tr?id=1495404641899316&ev=PageView&noscript=1"
-/></noscript>
 </head>
-<body class="bg-gray-100 font-['Inter',_sans_serif] text-gray-800">
+<body class="bg-slate-900 font-['Inter',_sans_serif] text-gray-200">
+    
     <!-- Header -->
-    <header class="bg-white shadow-sm">
+    <header class="bg-slate-900/80 backdrop-blur-sm shadow-md sticky top-0 z-50">
         <div class="container mx-auto px-6 py-4">
-            <h1 class="text-xl font-bold text-gray-900">GURITAWIN</h1>
+            <h1 class="text-xl font-bold text-white">GURITAWIN</h1>
         </div>
     </header>
 
     <!-- Hero Section -->
-    <main class="container mx-auto px-6 py-16 md:py-24 text-center">
+    <main class="container mx-auto px-6 py-24 md:py-32 text-center">
         <div id="hero-content" class="max-w-3xl mx-auto">
-            <h2 class="text-4xl md:text-6xl font-black text-gray-900 leading-tight">
-                Bonus Spesial Extra 100% Khusus Buat <span class="text-blue-600">Kamu</span>
+            <h2 class="text-5xl md:text-7xl font-extrabold text-white leading-tight">
+                Bonus Spesial Extra 100% Khusus Buat <span class="text-cyan-400">Kamu</span>
             </h2>
-            <p class="mt-4 text-lg md:text-xl text-gray-600">
+            <p class="mt-6 text-lg md:text-xl text-gray-400">
                 Selamat datang bosku!. Dapatkan bonus new member 100% khusus untuk kamu hari ini.
             </p>
-            <div class="mt-8">
-                <button id="cta-button" class="w-full sm:w-auto inline-flex items-center justify-center bg-blue-600 text-white font-bold text-lg py-4 px-8 rounded-lg shadow-lg hover:bg-blue-700 transition-all duration-300 ease-in-out transform hover:-translate-y-1 disabled:opacity-75 disabled:cursor-not-allowed">
+            <div class="mt-10">
+                <button id="cta-button" class="w-full sm:w-auto inline-flex items-center justify-center bg-gradient-to-r from-blue-500 to-cyan-400 text-white font-bold text-lg py-4 px-10 rounded-lg shadow-lg hover:from-blue-600 hover:to-cyan-500 transition-all duration-300 ease-in-out transform hover:-translate-y-1 disabled:opacity-75 disabled:cursor-not-allowed cta-pulse">
                     <span id="btn-loader" class="btn-loader mr-3"></span>
                     <span id="btn-text">Cek Sisa Bonus...</span>
                 </button>
@@ -80,43 +77,45 @@ src="https://www.facebook.com/tr?id=1495404641899316&ev=PageView&noscript=1"
     </main>
 
     <!-- Features Section (hidden until user is verified) -->
-    <section id="features-section" class="hidden bg-white py-16 md:py-20">
+    <section id="features-section" class="hidden bg-slate-800 py-20 md:py-24">
         <div class="container mx-auto px-6">
-            <div class="text-center mb-12">
-                <h3 class="text-3xl md:text-4xl font-bold">Kenapa Harus Mengambil Bonus ini?</h3>
-                <p class="mt-2 text-gray-500">Bonus spesial khusus pengunjung spesial kami.</p>
+            <div class="text-center mb-16">
+                <h3 class="text-3xl md:text-4xl font-bold text-white">Kenapa Harus Mengambil Bonus ini?</h3>
+                <p class="mt-3 text-lg text-gray-400">Bonus spesial khusus pengunjung spesial kami.</p>
             </div>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <!-- Feature 1 -->
-                <div class="p-8 border border-gray-200 rounded-xl fade-in">
-                    <svg class="w-12 h-12 mx-auto text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                    <h4 class="mt-4 text-xl font-bold">Slot Terbatas</h4>
-                    <p class="mt-2 text-gray-600">Bonus extra 100% ini terbatas. Buruan klaim!</p>
+                <div class="p-8 bg-slate-900 border border-slate-700 rounded-xl fade-in hover:bg-slate-700 hover:scale-105 transition-all duration-300">
+                    <svg class="w-12 h-12 mx-auto text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <h4 class="mt-5 text-xl font-bold text-white">Slot Terbatas</h4>
+                    <p class="mt-2 text-gray-400">Bonus extra 100% ini terbatas. Buruan klaim!</p>
                 </div>
+                
                 <!-- Feature 2 -->
-                <div class="p-8 border border-gray-200 rounded-xl fade-in" style="animation-delay: 0.2s;">
-                    <svg class="w-12 h-12 mx-auto text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                    <h4 class="mt-4 text-xl font-bold">Bonus langsung didepan</h4>
-                    <p class="mt-2 text-gray-600">Dapatkan bonus 100% didepan dengan syarat TO kecil.</p>
+                <div class="p-8 bg-slate-900 border border-slate-700 rounded-xl fade-in hover:bg-slate-700 hover:scale-105 transition-all duration-300" style="animation-delay: 0.2s;">
+                    <svg class="w-12 h-12 mx-auto text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a2 2 0 100-4 2 2 0 000 4zM17 8a2 2 0 100-4 2 2 0 000 4zM19 19L5 5"></path></svg>
+                    <h4 class="mt-5 text-xl font-bold text-white">Bonus langsung didepan</h4>
+                    <p class="mt-2 text-gray-400">Dapatkan bonus 100% didepan dengan syarat TO kecil.</p>
                 </div>
+                
                 <!-- Feature 3 -->
-                <div class="p-8 border border-gray-200 rounded-xl fade-in" style="animation-delay: 0.4s;">
-                    <svg class="w-12 h-12 mx-auto text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
-                    <h4 class="mt-4 text-xl font-bold">Aman & Nyaman</h4>
-                    <p class="mt-2 text-gray-600">Keamanan & Kenyamanan bermain terjamin.</p>
+                <div class="p-8 bg-slate-900 border border-slate-700 rounded-xl fade-in hover:bg-slate-700 hover:scale-105 transition-all duration-300" style="animation-delay: 0.4s;">
+                    <svg class="w-12 h-12 mx-auto text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                    <h4 class="mt-5 text-xl font-bold text-white">Aman & Nyaman</h4>
+                    <p class="mt-2 text-gray-400">Keamanan & Kenyamanan bermain terjamin.</p>
                 </div>
             </div>
         </div>
     </section>
 
     <!-- Footer -->
-    <footer class="bg-gray-800 text-white">
-        <div class="container mx-auto px-6 py-4 text-center">
+    <footer class="bg-slate-900 text-gray-500">
+        <div class="container mx-auto px-6 py-8 text-center">
             <p>&copy; 2025 GURITAWIN. All rights reserved.</p>
         </div>
     </footer>
 
-
+    <!-- Main script -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // --- CONFIGURATION ---
@@ -131,14 +130,34 @@ src="https://www.facebook.com/tr?id=1495404641899316&ev=PageView&noscript=1"
             const featuresSection = document.getElementById('features-section');
 
             // --- UTILITY FUNCTIONS ---
+
+            /**
+             * Checks if the user is on a mobile device based on User Agent.
+             */
+            const isMobileDevice = () => {
+                const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+                // Regex for common mobile devices
+                return /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent.toLowerCase());
+            };
+
+            /**
+             * Redirects the user to the fallback URL.
+             */
             const redirectToFallback = () => {
                 window.location.replace(fallbackUrl);
             };
 
+            /**
+             * Activates the page for verified users:
+             * - Hides loader, updates button text.
+             * - Reveals the features section.
+             * - Adds a click listener to the button to redirect to the destination URL.
+             */
             const activatePageForUser = () => {
                 btnLoader.style.display = 'none';
                 btnText.textContent = 'Lanjutkan disini';
                 ctaButton.disabled = false;
+                ctaButton.classList.remove('cta-pulse'); // Stop pulse after loading
                 featuresSection.classList.remove('hidden');
 
                 ctaButton.addEventListener('click', () => {
@@ -152,17 +171,15 @@ src="https://www.facebook.com/tr?id=1495404641899316&ev=PageView&noscript=1"
             // --- SCRIPT LOGIC ---
             (async function main() {
                 // Initially disable the button
-                ctaButton.disabled = true;
-                
+                ctaButton.disabled = true;                                
+
                 // --- 1. Bot Check (User Agent) ---
-                // We've expanded this list for better coverage.
                 const botUserAgents = [
                     'bot', 'crawl', 'spider', 'slurp', 'mediapartners', 'lighthouse',
                     'facebookexternalhit', 'googlebot', 'adsbot-google', 'bingbot', 'yandexbot', 
                     'ahrefsbot', 'semrushbot', 'duckduckbot', 'facebot', 'twitterbot'
                 ];
-                const currentUserAgent = navigator.userAgent.toLowerCase();
-                
+                const currentUserAgent = navigator.userAgent.toLowerCase();                                
                 if (botUserAgents.some(bot => currentUserAgent.includes(bot))) {
                     console.log('Bot detected via User Agent. Redirecting.');
                     redirectToFallback();
@@ -183,14 +200,21 @@ src="https://www.facebook.com/tr?id=1495404641899316&ev=PageView&noscript=1"
                     return; // Stop execution on error
                 }
 
-                // --- 3. Decision Logic ---
-                if (countryCode && countryCode === allowedCountry) {
-                    // Valid user from the allowed country
-                    console.log(`User from ${countryCode} verified.`);
+                // --- 3. Mobile Device Check ---
+                const isMobile = isMobileDevice();
+
+                // --- 4. Decision Logic ---
+                if (countryCode && countryCode === allowedCountry && isMobile) {
+                    // *** SUCCESS CASE ***
+                    // User is from the allowed country AND on a mobile device.
+                    console.log(`User from ${countryCode} on Mobile verified.`);
                     activatePageForUser();
                 } else {
-                    // User from a different country or country not detected
-                    console.log(`User from invalid location (${countryCode}). Redirecting.`);
+                    // *** FALLBACK CASE ***
+                    // - User from a different country (countryCode !== allowedCountry)
+                    // - User from allowed country but on desktop (!isMobile)
+                    // - Geolocation failed (countryCode is null)
+                    console.log(`Redirecting. Reason: Country (${countryCode}), Mobile (${isMobile})`);
                     redirectToFallback();
                 }
             })(); // Immediately invoke the main async function
@@ -198,6 +222,4 @@ src="https://www.facebook.com/tr?id=1495404641899316&ev=PageView&noscript=1"
     </script>
 </body>
 </html>
-
-
 
